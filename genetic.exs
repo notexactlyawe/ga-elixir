@@ -12,7 +12,7 @@ defmodule GAHelper do
   end
 
   def select_breeding_population(population, fitness_fn, aim, size) do
-    Enum.sort(population, fn a, b -> fitness_fn.(a, aim) <= fitness_fn.(b, aim) end)
+    Enum.sort(population, &(fitness_fn.(&1, aim) <= fitness_fn.(&2, aim)))
     |> Enum.slice(0..size)
   end
 
@@ -48,19 +48,19 @@ defmodule NumberGA do
     new_gen = gen + 1
     breeding = GAHelper.select_breeding_population(pop, &fitness/2, aim, 10)
     new_pop = GAHelper.breed_new_pop(breeding, 20, &breed/2)
-    fit = Enum.map(new_pop, fn x -> fitness(x, aim) end)
-    if Enum.reduce(fit, fn x, acc -> min(x, acc) end) != 0 do
+    fit = Enum.map(new_pop, &(fitness(&1, aim)))
+    if Enum.reduce(fit, &(min(&1, &2))) != 0 do
       IO.puts("Gen #{new_gen}")
       IO.inspect(fit)
       IO.inspect(average(fit))
       find_solution(aim, new_pop, new_gen)
     else
-      display_solution Enum.find(new_pop, fn x -> fitness(x, aim) == 0 end)
+      display_solution Enum.find(new_pop, &(fitness(&1, aim) == 0))
     end
   end
 
   def average(sols) do
-    total = Enum.reduce(sols, fn x, acc -> x + acc end)
+    total = Enum.reduce(sols, &(&1 + &2))
     total / length(sols)
   end
 
